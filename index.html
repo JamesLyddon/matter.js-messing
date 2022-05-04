@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+  </head>
+  <body>
+    <script src="matter.js"></script>
+    <script>
+      let engine = Matter.Engine.create(); // make engine instance
+      let render = Matter.Render.create({
+        // make render instance
+        element: document.body,
+        engine: engine,
+        options: {
+          // set screen size and disable wireframe default
+          width: 1200,
+          height: 600,
+          wireframes: false,
+        },
+      });
+
+      // instantiate rectangle for platform in the top right
+      let ground = Matter.Bodies.rectangle(900, 300, 200, 20, {
+        isStatic: true,
+      });
+
+      let mouse = Matter.Mouse.create(render.canvas); // create a mouse instance
+      let mouseConstraint = Matter.MouseConstraint.create(engine, {
+        // set a mouse constraint
+        mouse: mouse,
+        constraint: {
+          render: { visible: false },
+        },
+      });
+      render.mouse = mouse; // set the mouse to the instance we made
+
+      // bullet - create ball
+      let ball = Matter.Bodies.circle(200, 500, 20);
+      // sling - create sling with constraint class
+      let sling = Matter.Constraint.create({
+        pointA: { x: 200, y: 500 }, // fixed point (same as ball)
+        bodyB: ball, //object to attach to the sling
+        stiffness: 0.05,
+      });
+
+      // targets - create stack of octogons
+      let stack = Matter.Composites.stack(
+        830,
+        100,
+        4,
+        4,
+        0,
+        0,
+        function (x, y) {
+          return Matter.Bodies.polygon(x, y, 8, 20);
+        }
+      );
+
+      Matter.World.add(engine.world, [
+        stack,
+        ground,
+        ball,
+        sling,
+        mouseConstraint,
+      ]); // add engine.world and objects to World (including mouseContraint)
+      Matter.Runner.run(engine); // run the engine and render
+      Matter.Render.run(render);
+    </script>
+  </body>
+</html>
